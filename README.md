@@ -1,4 +1,4 @@
-# Farmer's Delight
+# Brewin' and Chewin'
 
 <a href="https://www.curseforge.com/minecraft/mc-mods/farmers-delight">
   <img src="http://cf.way2muchnoise.eu/full_398521_downloads.svg" alt="Curseforge Downloads">
