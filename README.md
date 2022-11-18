@@ -1,6 +1,6 @@
 # Brewin' and Chewin'
 
-<a href="https://www.curseforge.com/minecraft/mc-mods/farmers-delight">
+<a href="https://www.curseforge.com/minecraft/mc-mods/brewin-and-chewin">
   <img src="http://cf.way2muchnoise.eu/full_398521_downloads.svg" alt="Curseforge Downloads">
 </a>
 <a href="https://discord.gg/eFsz5SK">
