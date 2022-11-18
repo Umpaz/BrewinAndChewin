@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "cc"
+  ],
+  "key": {
+    "c": {
+      "item": "farmersdelight:canvas"
+    }
+  },
+  "result": {
+    "item": "brewinandchewin:item_mat",
+    "count": 16
+  }
+}

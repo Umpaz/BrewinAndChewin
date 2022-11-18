@@ -1,0 +1,19 @@
+{
+    "variants": {
+        "facing=north": {
+            "model": "brewinandchewin:block/item_mat"
+        },
+        "facing=south": {
+            "model": "brewinandchewin:block/item_mat",
+            "y": 180
+        },
+        "facing=west": {
+            "model": "brewinandchewin:block/item_mat",
+            "y": 270
+        },
+        "facing=east": {
+            "model": "brewinandchewin:block/item_mat",
+            "y": 90
+        }
+    }
+}

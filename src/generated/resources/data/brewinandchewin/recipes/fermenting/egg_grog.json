@@ -1,0 +1,29 @@
+{
+  "type": "brewinandchewin:fermenting",
+  "ingredients": [
+    {
+      "item": "minecraft:egg"
+    },
+    {
+      "item": "minecraft:egg"
+    },
+    {
+      "item": "farmersdelight:cabbage_leaf"
+    },
+    {
+      "item": "minecraft:sugar"
+    }
+  ],
+  "result": {
+    "item": "brewinandchewin:egg_grog"
+  },
+  "container": {
+    "item": "brewinandchewin:tankard"
+  },
+  "liquid": {
+    "item": "minecraft:milk_bucket"
+  },
+  "experience": 0.6,
+  "cookingtime": 12000,
+  "temperature": 3
+}

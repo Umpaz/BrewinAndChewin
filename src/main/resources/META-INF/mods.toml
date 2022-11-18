@@ -1,0 +1,38 @@
+
+modLoader="javafml"
+loaderVersion="[37,)"
+license="MIT License"
+
+[[mods]]
+modId="brewinandchewin"
+version="1.18.2-1.0.1"
+displayName="Brewin' and Chewin'"
+# updateJSONURL=""
+logoFile="logo.png"
+logoBlur=false
+credits="Umpaz & HoboJoe"
+authors="umpaz"
+description="An addon created by Umpaz and HoboJoe, for the Farmer's Delight mod by vectorwing. Adds a keg in which you can ferment some booze or dry out some foods!"
+itemIcon="brewinandchewin:keg"
+configBackground="minecraft:textures/block/bricks.png"
+
+[[dependencies.brewinandchewin]]
+    modId="forge"
+    mandatory=true
+    versionRange="[39,)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.brewinandchewin]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.18.2]"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.brewinandchewin]]
+    modId = "farmersdelight"
+    mandatory = true
+    versionRange = "[1.0.4,)"
+    ordering = "AFTER"
+    side = "BOTH"
