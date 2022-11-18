@@ -3,8 +3,8 @@
 <a href="https://www.curseforge.com/minecraft/mc-mods/brewin-and-chewin">
   <img src="http://cf.way2muchnoise.eu/full_637808_downloads.svg" alt="Curseforge Downloads">
 </a>
-<a href="https://discord.gg/eFsz5SK">
-  <img alt="Discord" src="https://img.shields.io/discord/734511833947439156?color=brightgreen&label=Discord">
+<a href="https://discord.gg/M5AtJGPf">
+  <img alt="Discord" src="https://img.shields.io/discord/855495317298741248?color=brightgreen&label=Discord">
 </a>
 <br>
 <img src="https://i.imgur.com/aDELzhM.png" width="50%">
