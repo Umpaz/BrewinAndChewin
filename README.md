@@ -1,4 +1,4 @@
-# Brewin' and Chewin'
+# Brewin' And Chewin'
 
 <a href="https://www.curseforge.com/minecraft/mc-mods/brewin-and-chewin">
   <img src="http://cf.way2muchnoise.eu/full_637808_downloads.svg" alt="Curseforge Downloads">
