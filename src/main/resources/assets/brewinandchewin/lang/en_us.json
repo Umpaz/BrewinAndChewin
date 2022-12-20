@@ -1,0 +1,10 @@
+{
+  "brewinandchewin.container.keg.frigid": "Frigid: %s",
+  "brewinandchewin.container.keg.cold": "Cold: %s",
+  "brewinandchewin.container.keg.normal": "Normal: %s",
+  "brewinandchewin.container.keg.warm": "Warm: %s",
+  "brewinandchewin.container.keg.hot": "Hot: %s",
+
+  "brewinandchewin.container.keg": "Keg",
+  "brewinandchewin.container.recipe_book.fermentable": "Showing Fermentable"
+}

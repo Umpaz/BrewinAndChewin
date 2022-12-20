@@ -1,38 +1,37 @@
-
 modLoader="javafml"
-loaderVersion="[37,)"
+loaderVersion="[41,)"
 license="MIT License"
 
 [[mods]]
 modId="brewinandchewin"
-version="1.18.2-1.0.1"
-displayName="Brewin' and Chewin'"
+version="1.19-2.0"
+displayName="Farmer's Respite"
 # updateJSONURL=""
 logoFile="logo.png"
 logoBlur=false
-credits="Umpaz & HoboJoe"
-authors="umpaz"
-description="An addon created by Umpaz and HoboJoe, for the Farmer's Delight mod by vectorwing. Adds a keg in which you can ferment some booze or dry out some foods!"
-itemIcon="brewinandchewin:keg"
+credits="Umpaz, Probleyes, SoyTutta"
+authors="Umpaz, Probleyes"
+description="An addon for the Farmer's Delight mod centered around brewing tea and coffee in the kettle"
+itemIcon="farmersrespite:kettle"
 configBackground="minecraft:textures/block/bricks.png"
 
 [[dependencies.brewinandchewin]]
     modId="forge"
     mandatory=true
-    versionRange="[39,)"
+    versionRange="[41.1.0,)"
     ordering="NONE"
     side="BOTH"
 
 [[dependencies.brewinandchewin]]
     modId="minecraft"
     mandatory=true
-    versionRange="[1.18.2]"
+    versionRange="[1.19,1.20)"
     ordering="NONE"
     side="BOTH"
 
 [[dependencies.brewinandchewin]]
-    modId = "farmersdelight"
-    mandatory = true
-    versionRange = "[1.0.4,)"
-    ordering = "AFTER"
-    side = "BOTH"
+modId="farmersdelight"
+mandatory=true
+versionRange="[1.19,1.20)"
+ordering="NONE"
+side="BOTH"

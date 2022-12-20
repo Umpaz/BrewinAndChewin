@@ -1,11 +1,9 @@
 {
   "required": true,
-  "package": "com.brewinandchewin.core.mixin",
-  "compatibilityLevel": "JAVA_16",
-  "refmap": "brewinandchewin.refmap.json",
+  "package": "umpaz.brewinandchewin.common.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "farmersrespite.refmap.json",
   "mixins": [
-	"FoodDataMixin",
-    "HideBlockBreakTextureMixin"
   ],
   "client": [
   ],
