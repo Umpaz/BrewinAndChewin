@@ -15,6 +15,7 @@ import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import umpaz.brewinandchewin.BrewinAndChewin;
+import umpaz.brewinandchewin.client.widget.FluidWidget;
 import umpaz.brewinandchewin.common.block.entity.container.KegMenu;
 import umpaz.brewinandchewin.common.utility.BCTextUtils;
 import vectorwing.farmersdelight.common.Configuration;
@@ -68,6 +69,7 @@ public class KegScreen extends AbstractContainerScreen<KegMenu> implements Recip
             this.leftPos = this.recipeBookComponent.updateScreenPosition(this.width, this.imageWidth);
         }
         this.addWidget(this.recipeBookComponent);
+        this.addRenderableOnly(new FluidWidget(this,this.leftPos + 85,this.topPos + 18,16,16, this.menu.fluidTank));
         this.setInitialFocus(this.recipeBookComponent);
     }
 

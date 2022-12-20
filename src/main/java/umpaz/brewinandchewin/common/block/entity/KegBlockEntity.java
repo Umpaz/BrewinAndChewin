@@ -28,6 +28,9 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
+import net.minecraftforge.fluids.capability.IFluidHandler;
+import net.minecraftforge.fluids.capability.templates.FluidTank;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
@@ -61,6 +64,15 @@ public class KegBlockEntity extends SyncedBlockEntity implements MenuProvider, N
     private final ItemStackHandler inventory;
     private final LazyOptional<IItemHandler> inputHandler;
     private final LazyOptional<IItemHandler> outputHandler;
+
+    //tank
+    private final FluidTank fluidTank = new FluidTank(1000) {
+        @Override
+        protected void onContentsChanged() {
+            KegBlockEntity.this.setChanged();
+        }
+    };
+    private final LazyOptional<IFluidHandler> fluidHandler = LazyOptional.of(() -> fluidTank);
 
     private int fermentTime;
     private int fermentTimeTotal;
@@ -117,6 +129,8 @@ public class KegBlockEntity extends SyncedBlockEntity implements MenuProvider, N
         for (String key : compoundRecipes.getAllKeys()) {
             usedRecipeTracker.put(new ResourceLocation(key), compoundRecipes.getInt(key));
         }
+        //load tank
+        fluidTank.readFromNBT(compound.getCompound("FluidTank"));
     }
 
     @Override
@@ -133,12 +147,16 @@ public class KegBlockEntity extends SyncedBlockEntity implements MenuProvider, N
         CompoundTag compoundRecipes = new CompoundTag();
         usedRecipeTracker.forEach((recipeId, craftedAmount) -> compoundRecipes.putInt(recipeId.toString(), craftedAmount));
         compound.put("RecipesUsed", compoundRecipes);
+        //save tank
+        compound.put("FluidTank", fluidTank.writeToNBT(new CompoundTag()));
     }
 
     private CompoundTag writeItems(CompoundTag compound) {
         super.saveAdditional(compound);
         compound.put("Container", drinkContainerStack.serializeNBT());
         compound.put("Inventory", inventory.serializeNBT());
+        //also add fluid
+        compound.put("FluidTank", fluidTank.writeToNBT(new CompoundTag()));
         return compound;
     }
 
@@ -395,6 +413,9 @@ public class KegBlockEntity extends SyncedBlockEntity implements MenuProvider, N
         return inventory;
     }
 
+    //get Tank
+    public FluidTank getFluidTank() {return fluidTank;}
+
     public ItemStack getDrink() {
         return inventory.getStackInSlot(DRINK_DISPLAY_SLOT);
     }
@@ -496,6 +517,10 @@ public class KegBlockEntity extends SyncedBlockEntity implements MenuProvider, N
                 return outputHandler.cast();
             }
         }
+        //provide cap
+        if (cap.equals(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY)) {
+            return fluidHandler.cast();
+        }
         return super.getCapability(cap, side);
     }
 
@@ -504,6 +529,8 @@ public class KegBlockEntity extends SyncedBlockEntity implements MenuProvider, N
         super.setRemoved();
         inputHandler.invalidate();
         outputHandler.invalidate();
+        //invalidate
+        fluidHandler.invalidate();
     }
 
     @Override

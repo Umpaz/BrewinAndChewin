@@ -9,17 +9,25 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.StackedContents;
 import net.minecraft.world.inventory.*;
+import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.material.Fluids;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
+import net.minecraftforge.fluids.capability.IFluidHandler;
+import net.minecraftforge.fluids.capability.templates.FluidTank;
 import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.items.SlotItemHandler;
 import net.minecraftforge.items.wrapper.RecipeWrapper;
+import org.jetbrains.annotations.NotNull;
 import umpaz.brewinandchewin.BrewinAndChewin;
+import umpaz.brewinandchewin.common.block.KegBlock;
 import umpaz.brewinandchewin.common.block.entity.KegBlockEntity;
 import umpaz.brewinandchewin.common.block.entity.inventory.KegServerPlaceRecipe;
 import umpaz.brewinandchewin.common.registry.BCBlocks;
@@ -37,11 +45,14 @@ public class KegMenu extends RecipeBookMenu<RecipeWrapper>
     private final ContainerData kegData;
     private final ContainerLevelAccess canInteractWithCallable;
     protected final Level level;
+    //fluid tank access
+    public final FluidTank fluidTank;
 
     public KegMenu(final int windowId, final Inventory playerInventory, final KegBlockEntity tileEntity, ContainerData kegDataIn) {
         super(BCMenuTypes.KEG.get(), windowId);
         this.tileEntity = tileEntity;
         this.inventory = tileEntity.getInventory();
+        this.fluidTank = tileEntity.getFluidTank();
         this.kegData = kegDataIn;
         this.level = playerInventory.player.level;
         this.canInteractWithCallable = ContainerLevelAccess.create(tileEntity.getLevel(), tileEntity.getBlockPos());
@@ -61,7 +72,40 @@ public class KegMenu extends RecipeBookMenu<RecipeWrapper>
         }
 
         // Fluid Recipe Slot
-        this.addSlot(new SlotItemHandler(inventory, 4, 85, 18));
+        this.addSlot(new SlotItemHandler(inventory, 4, 85, 18) {
+            //Only allow items with a fluid in it
+            @Override
+            public boolean mayPlace(@NotNull ItemStack stack) {
+                return stack.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY).isPresent() || stack.isEmpty();
+            }
+
+            //Handle fluid interactions when placed
+            @Override
+            public void set(@NotNull ItemStack stack) {
+                //Drain to tank if possible
+                stack.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY).ifPresent(cap -> {
+                    if (KegMenu.this.fluidTank.getFluid().isEmpty() || KegMenu.this.fluidTank.getFluid().equals(cap.getFluidInTank(0))) {
+                        int amount = KegMenu.this.fluidTank.fill(cap.getFluidInTank(0), IFluidHandler.FluidAction.SIMULATE);
+                        if (amount == 0) {
+                            return;
+                        }
+                        FluidStack fluidStack = cap.getFluidInTank(0).copy();
+                        fluidStack.setAmount(amount);
+                        KegMenu.this.fluidTank.fill(fluidStack, IFluidHandler.FluidAction.SIMULATE);
+                        cap.drain(amount, IFluidHandler.FluidAction.EXECUTE);
+                    }
+                });
+                //Buckets are hard coded, so this is needed. Empties out a bucket if possible.
+                if (stack.getItem() instanceof BucketItem bucket) {
+                    if (!bucket.getFluid().equals(Fluids.EMPTY) && KegMenu.this.fluidTank.isEmpty()) {
+                        FluidStack fluidStack = new FluidStack(bucket.getFluid(), 1000);
+                        KegMenu.this.fluidTank.fill(fluidStack, IFluidHandler.FluidAction.EXECUTE);
+                        stack = new ItemStack(Items.BUCKET);
+                    }
+                }
+                super.set(stack);
+            }
+        });
 
         // Drink Display
         this.addSlot(new CookingPotMealSlot(inventory, 5, 122, 23));
