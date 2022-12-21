@@ -41,8 +41,10 @@ public class KegScreen extends AbstractContainerScreen<KegMenu> implements Recip
     private static final Rectangle BUBBLE_1 = new Rectangle(74, 14, 9, 24);
     private static final Rectangle BUBBLE_2 = new Rectangle(103, 14, 9, 24);
     private static final int[] BUBBLELENGTHS = new int[]{24, 20, 16, 12, 8, 4, 0};
+    //move the widget Makes the widget movable. Technically the pos is ignored here, as it is set later.
+    private final FluidWidget fluidWidget = new FluidWidget(this, this.leftPos + 85,this.topPos + 18,16,16, this.menu.fluidTank);
 
-    private final KegRecipeBookComponent recipeBookComponent = new KegRecipeBookComponent();
+    public final KegRecipeBookComponent recipeBookComponent = new KegRecipeBookComponent();
     private boolean widthTooNarrow;
 
     public KegScreen(KegMenu screenContainer, Inventory inv, Component titleIn) {
@@ -57,19 +59,25 @@ public class KegScreen extends AbstractContainerScreen<KegMenu> implements Recip
         this.titleLabelY = 17;
         this.recipeBookComponent.init(this.width, this.height, this.minecraft, this.widthTooNarrow, this.menu);
         this.leftPos = this.recipeBookComponent.updateScreenPosition(this.width, this.imageWidth);
+        //Set the pos correctly the first time the gui opens.
+        fluidWidget.setPos(this.leftPos + 85, this.topPos + 18);
         if (Configuration.ENABLE_RECIPE_BOOK_COOKING_POT.get()) {
             this.addRenderableWidget(new ImageButton(this.leftPos + 5, this.height / 2 - 49, 20, 18, 0, 0, 19, RECIPE_BUTTON_LOCATION, (button) ->
             {
                 this.recipeBookComponent.toggleVisibility();
                 this.leftPos = this.recipeBookComponent.updateScreenPosition(this.width, this.imageWidth);
                 ((ImageButton) button).setPosition(this.leftPos + 5, this.height / 2 - 49);
+                //move the widget
+                fluidWidget.setPos(this.leftPos + 85, this.topPos + 18);
             }));
         } else {
             this.recipeBookComponent.hide();
             this.leftPos = this.recipeBookComponent.updateScreenPosition(this.width, this.imageWidth);
+            //move the widget
+            fluidWidget.setPos(this.leftPos + 85, this.topPos + 18);
         }
         this.addWidget(this.recipeBookComponent);
-        this.addRenderableOnly(new FluidWidget(this,this.leftPos + 85,this.topPos + 18,16,16, this.menu.fluidTank));
+        this.addRenderableOnly(fluidWidget);
         this.setInitialFocus(this.recipeBookComponent);
     }
 

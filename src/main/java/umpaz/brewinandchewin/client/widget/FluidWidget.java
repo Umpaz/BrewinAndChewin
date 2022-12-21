@@ -73,4 +73,9 @@ public class FluidWidget extends AbstractWidget {
     protected boolean isHovered(int mouseX, int mouseY) {
         return mouseX >= this.x && mouseY >= this.y && mouseX < this.x + this.width && mouseY < this.y + this.height;
     }
+
+    public void setPos(int x, int y) {
+        this.x = x;
+        this.y = y;
+    }
 }

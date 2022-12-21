@@ -1,6 +1,7 @@
 package umpaz.brewinandchewin.common.block.entity.container;
 
 import com.mojang.datafixers.util.Pair;
+import net.minecraft.client.gui.screens.inventory.CraftingScreen;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.recipebook.ServerPlaceRecipe;
 import net.minecraft.resources.ResourceLocation;
@@ -72,6 +73,7 @@ public class KegMenu extends RecipeBookMenu<RecipeWrapper>
         }
 
         // Fluid Recipe Slot
+        //Here I've placed the logic in the "slot". This can also be done inside the itemhandler
         this.addSlot(new SlotItemHandler(inventory, 4, 85, 18) {
             //Only allow items with a fluid in it
             @Override
