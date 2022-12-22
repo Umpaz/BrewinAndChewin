@@ -70,6 +70,7 @@ public class KegBlockEntity extends SyncedBlockEntity implements MenuProvider, N
         @Override
         protected void onContentsChanged() {
             KegBlockEntity.this.setChanged();
+            KegBlockEntity.this.level.sendBlockUpdated(KegBlockEntity.this.worldPosition, KegBlockEntity.this.getBlockState(), KegBlockEntity.this.getBlockState(), 3);
         }
     };
     private final LazyOptional<IFluidHandler> fluidHandler = LazyOptional.of(() -> fluidTank);

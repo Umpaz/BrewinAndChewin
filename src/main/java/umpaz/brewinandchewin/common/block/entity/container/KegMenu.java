@@ -13,6 +13,8 @@ import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.alchemy.PotionUtils;
+import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -80,7 +82,8 @@ public class KegMenu extends RecipeBookMenu<RecipeWrapper>
             //Only allow items with a fluid in it
             @Override
             public boolean mayPlace(@NotNull ItemStack stack) {
-                return stack.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY).isPresent();
+                return stack.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY).isPresent() ||
+                PotionUtils.getPotion(stack).equals(Potions.WATER);
             }
 
             //Handle fluid interactions when placed
@@ -93,6 +96,18 @@ public class KegMenu extends RecipeBookMenu<RecipeWrapper>
                     //for buckets, this will be the empty bucket, for others, this should be the same as stack
                     result.set(cap.getContainer());
                 });
+                //Handle bottles
+                if (PotionUtils.getPotion(stack).equals(Potions.WATER)) {
+                    int amount = KegMenu.this.fluidTank.fill(new FluidStack(Fluids.WATER, 333), IFluidHandler.FluidAction.SIMULATE);
+                    //Cancel if the full bottle can't be emptied;
+                    if (amount != 333) {
+                        return;
+                    }
+                    //Actually fill, and add 1 if it would have been 999.
+                    KegMenu.this.fluidTank.fill(new FluidStack(Fluids.WATER, KegMenu.this.fluidTank.getFluidAmount() == 666? 334 : 333), IFluidHandler.FluidAction.EXECUTE);
+                    //Empty bottle
+                    result.set(new ItemStack(Items.GLASS_BOTTLE));
+                }
                 super.set(result.get());
             }
         });
