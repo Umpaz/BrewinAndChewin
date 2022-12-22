@@ -20,6 +20,7 @@ import net.minecraft.world.level.material.Fluids;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidUtil;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.templates.FluidTank;
@@ -36,6 +37,7 @@ import umpaz.brewinandchewin.common.registry.BCMenuTypes;
 import vectorwing.farmersdelight.common.block.entity.container.CookingPotMealSlot;
 
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class KegMenu extends RecipeBookMenu<RecipeWrapper>
 {
@@ -78,34 +80,20 @@ public class KegMenu extends RecipeBookMenu<RecipeWrapper>
             //Only allow items with a fluid in it
             @Override
             public boolean mayPlace(@NotNull ItemStack stack) {
-                return stack.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY).isPresent() || stack.isEmpty();
+                return stack.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY).isPresent();
             }
 
             //Handle fluid interactions when placed
             @Override
             public void set(@NotNull ItemStack stack) {
                 //Drain to tank if possible
+                AtomicReference<ItemStack> result = new AtomicReference<>(stack);
                 stack.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY).ifPresent(cap -> {
-                    if (KegMenu.this.fluidTank.getFluid().isEmpty() || KegMenu.this.fluidTank.getFluid().equals(cap.getFluidInTank(0))) {
-                        int amount = KegMenu.this.fluidTank.fill(cap.getFluidInTank(0), IFluidHandler.FluidAction.SIMULATE);
-                        if (amount == 0) {
-                            return;
-                        }
-                        FluidStack fluidStack = cap.getFluidInTank(0).copy();
-                        fluidStack.setAmount(amount);
-                        KegMenu.this.fluidTank.fill(fluidStack, IFluidHandler.FluidAction.SIMULATE);
-                        cap.drain(amount, IFluidHandler.FluidAction.EXECUTE);
-                    }
+                    FluidUtil.tryFluidTransfer(KegMenu.this.fluidTank,cap, 1000, true );
+                    //for buckets, this will be the empty bucket, for others, this should be the same as stack
+                    result.set(cap.getContainer());
                 });
-                //Buckets are hard coded, so this is needed. Empties out a bucket if possible.
-                if (stack.getItem() instanceof BucketItem bucket) {
-                    if (!bucket.getFluid().equals(Fluids.EMPTY) && KegMenu.this.fluidTank.isEmpty()) {
-                        FluidStack fluidStack = new FluidStack(bucket.getFluid(), 1000);
-                        KegMenu.this.fluidTank.fill(fluidStack, IFluidHandler.FluidAction.EXECUTE);
-                        stack = new ItemStack(Items.BUCKET);
-                    }
-                }
-                super.set(stack);
+                super.set(result.get());
             }
         });
 
