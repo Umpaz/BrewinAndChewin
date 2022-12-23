@@ -78,39 +78,7 @@ public class KegMenu extends RecipeBookMenu<RecipeWrapper>
 
         // Fluid Recipe Slot
         //Here I've placed the logic in the "slot". This can also be done inside the itemhandler
-        this.addSlot(new SlotItemHandler(inventory, 4, 85, 18) {
-            //Only allow items with a fluid in it
-            @Override
-            public boolean mayPlace(@NotNull ItemStack stack) {
-                return stack.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY).isPresent() ||
-                PotionUtils.getPotion(stack).equals(Potions.WATER);
-            }
-
-            //Handle fluid interactions when placed
-            @Override
-            public void set(@NotNull ItemStack stack) {
-                //Drain to tank if possible
-                AtomicReference<ItemStack> result = new AtomicReference<>(stack);
-                stack.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY).ifPresent(cap -> {
-                    FluidUtil.tryFluidTransfer(KegMenu.this.fluidTank,cap, 1000, true );
-                    //for buckets, this will be the empty bucket, for others, this should be the same as stack
-                    result.set(cap.getContainer());
-                });
-                //Handle bottles
-                if (PotionUtils.getPotion(stack).equals(Potions.WATER)) {
-                    int amount = KegMenu.this.fluidTank.fill(new FluidStack(Fluids.WATER, 333), IFluidHandler.FluidAction.SIMULATE);
-                    //Cancel if the full bottle can't be emptied;
-                    if (amount != 333) {
-                        return;
-                    }
-                    //Actually fill, and add 1 if it would have been 999.
-                    KegMenu.this.fluidTank.fill(new FluidStack(Fluids.WATER, KegMenu.this.fluidTank.getFluidAmount() == 666? 334 : 333), IFluidHandler.FluidAction.EXECUTE);
-                    //Empty bottle
-                    result.set(new ItemStack(Items.GLASS_BOTTLE));
-                }
-                super.set(result.get());
-            }
-        });
+        this.addSlot(new SlotItemHandler(inventory, 4, 85, 18));
 
         // Drink Display
         this.addSlot(new CookingPotMealSlot(inventory, 5, 122, 23));
