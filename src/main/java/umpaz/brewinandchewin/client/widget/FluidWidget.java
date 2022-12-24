@@ -51,9 +51,13 @@ public class FluidWidget extends AbstractWidget {
                             FastColor.ARGB32.blue(color) / 255.0F, FastColor.ARGB32.alpha(color) / 255.0F);
                     RenderSystem.enableBlend();
 
+                    //current percentage filled
+                    float capacity = fluidTank.getFluidAmount()/(float)fluidTank.getCapacity();
+
                     int atlasWidth = (int) (sprite.getWidth() / (sprite.getU1() - sprite.getU0()));
                     int atlasHeight = (int) (sprite.getHeight() / (sprite.getV1() - sprite.getV0()));
-                    blit(poseStack, x, y, width, height, sprite.getU0() * atlasWidth, sprite.getV0() * atlasHeight, sprite.getWidth(), sprite.getHeight(),
+                    //move down with 1-capacity percentage, and only render the (top) capacity percentage
+                    blit(poseStack, x, (int) (y + (1-capacity)*height), width, (int) (capacity*height), sprite.getU0() * atlasWidth, sprite.getV0() * atlasHeight + (1-capacity)*height, sprite.getWidth(), (int) (sprite.getHeight()*capacity),
                             atlasWidth, atlasHeight);
                     RenderSystem.setShaderColor(1, 1, 1, 1);
 
