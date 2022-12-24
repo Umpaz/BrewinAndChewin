@@ -557,6 +557,15 @@ public class KegBlockEntity extends SyncedBlockEntity implements MenuProvider, N
                 inventoryChanged();
             }
 
+            //only allow 1 item (to be able to handle the change to empty like a bucket)
+            @Override
+            protected int getStackLimit(int slot, @NotNull ItemStack stack) {
+                if (slot == 4) {
+                    return 1;
+                }
+                return super.getStackLimit(slot, stack);
+            }
+
             @Override
             public boolean isItemValid(int slot, @NotNull ItemStack stack) {
                 if (slot == 4) {

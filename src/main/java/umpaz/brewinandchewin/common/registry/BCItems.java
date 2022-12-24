@@ -4,6 +4,7 @@ import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.material.Fluids;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
@@ -36,7 +37,7 @@ public class BCItems
 		return new Item.Properties().craftRemainder(Items.GLASS_BOTTLE).stacksTo(16);
 	}
 
-	public static final RegistryObject<FluidItem> FLUID_ITEM = ITEMS.register("fluid_item", () -> new FluidItem(basicItem()));
+	public static final RegistryObject<FluidItem> FLUID_ITEM = ITEMS.register("fluid_item", () -> new FluidItem(basicItem().stacksTo(1), ()-> Fluids.WATER, 250));
 
 	// Blocks
 	public static final RegistryObject<Item> KEG = ITEMS.register("keg",
