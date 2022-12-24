@@ -8,6 +8,7 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import umpaz.brewinandchewin.BrewinAndChewin;
+import umpaz.brewinandchewin.common.item.FluidItem;
 
 @SuppressWarnings("unused")
 public class BCItems
@@ -34,6 +35,8 @@ public class BCItems
 	public static Item.Properties drinkItemNoItem() {
 		return new Item.Properties().craftRemainder(Items.GLASS_BOTTLE).stacksTo(16);
 	}
+
+	public static final RegistryObject<FluidItem> FLUID_ITEM = ITEMS.register("fluid_item", () -> new FluidItem(basicItem()));
 
 	// Blocks
 	public static final RegistryObject<Item> KEG = ITEMS.register("keg",
