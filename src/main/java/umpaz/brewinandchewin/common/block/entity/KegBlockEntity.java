@@ -21,17 +21,27 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.RecipeHolder;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.alchemy.PotionUtils;
+import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidUtil;
+import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
+import net.minecraftforge.fluids.capability.IFluidHandler;
+import net.minecraftforge.fluids.capability.templates.FluidTank;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.items.wrapper.RecipeWrapper;
+import org.jetbrains.annotations.NotNull;
 import umpaz.brewinandchewin.common.block.KegBlock;
 import umpaz.brewinandchewin.common.block.entity.container.KegMenu;
 import umpaz.brewinandchewin.common.block.entity.inventory.KegItemHandler;
@@ -50,6 +60,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class KegBlockEntity extends SyncedBlockEntity implements MenuProvider, Nameable, RecipeHolder
 {
@@ -61,6 +72,16 @@ public class KegBlockEntity extends SyncedBlockEntity implements MenuProvider, N
     private final ItemStackHandler inventory;
     private final LazyOptional<IItemHandler> inputHandler;
     private final LazyOptional<IItemHandler> outputHandler;
+
+    //tank
+    private final FluidTank fluidTank = new FluidTank(1000) {
+        @Override
+        protected void onContentsChanged() {
+            KegBlockEntity.this.setChanged();
+            KegBlockEntity.this.level.sendBlockUpdated(KegBlockEntity.this.worldPosition, KegBlockEntity.this.getBlockState(), KegBlockEntity.this.getBlockState(), 3);
+        }
+    };
+    private final LazyOptional<IFluidHandler> fluidHandler = LazyOptional.of(() -> fluidTank);
 
     private int fermentTime;
     private int fermentTimeTotal;
@@ -117,6 +138,8 @@ public class KegBlockEntity extends SyncedBlockEntity implements MenuProvider, N
         for (String key : compoundRecipes.getAllKeys()) {
             usedRecipeTracker.put(new ResourceLocation(key), compoundRecipes.getInt(key));
         }
+        //load tank
+        fluidTank.readFromNBT(compound.getCompound("FluidTank"));
     }
 
     @Override
@@ -133,12 +156,16 @@ public class KegBlockEntity extends SyncedBlockEntity implements MenuProvider, N
         CompoundTag compoundRecipes = new CompoundTag();
         usedRecipeTracker.forEach((recipeId, craftedAmount) -> compoundRecipes.putInt(recipeId.toString(), craftedAmount));
         compound.put("RecipesUsed", compoundRecipes);
+        //save tank
+        compound.put("FluidTank", fluidTank.writeToNBT(new CompoundTag()));
     }
 
     private CompoundTag writeItems(CompoundTag compound) {
         super.saveAdditional(compound);
         compound.put("Container", drinkContainerStack.serializeNBT());
         compound.put("Inventory", inventory.serializeNBT());
+        //also add fluid
+        compound.put("FluidTank", fluidTank.writeToNBT(new CompoundTag()));
         return compound;
     }
 
@@ -395,6 +422,9 @@ public class KegBlockEntity extends SyncedBlockEntity implements MenuProvider, N
         return inventory;
     }
 
+    //get Tank
+    public FluidTank getFluidTank() {return fluidTank;}
+
     public ItemStack getDrink() {
         return inventory.getStackInSlot(DRINK_DISPLAY_SLOT);
     }
@@ -496,6 +526,10 @@ public class KegBlockEntity extends SyncedBlockEntity implements MenuProvider, N
                 return outputHandler.cast();
             }
         }
+        //provide cap
+        if (cap.equals(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY)) {
+            return fluidHandler.cast();
+        }
         return super.getCapability(cap, side);
     }
 
@@ -504,6 +538,8 @@ public class KegBlockEntity extends SyncedBlockEntity implements MenuProvider, N
         super.setRemoved();
         inputHandler.invalidate();
         outputHandler.invalidate();
+        //invalidate
+        fluidHandler.invalidate();
     }
 
     @Override
@@ -512,14 +548,54 @@ public class KegBlockEntity extends SyncedBlockEntity implements MenuProvider, N
     }
 
     private ItemStackHandler createHandler() {
-        return new ItemStackHandler(INVENTORY_SIZE)
-        {
+        return new ItemStackHandler(INVENTORY_SIZE) {
             @Override
             protected void onContentsChanged(int slot) {
                 if (slot >= 0 && slot < DRINK_DISPLAY_SLOT) {
                     checkNewRecipe = true;
                 }
                 inventoryChanged();
+            }
+
+            //only allow 1 item (to be able to handle the change to empty like a bucket)
+            @Override
+            protected int getStackLimit(int slot, @NotNull ItemStack stack) {
+                if (slot == 4) {
+                    return 1;
+                }
+                return super.getStackLimit(slot, stack);
+            }
+
+            @Override
+            public boolean isItemValid(int slot, @NotNull ItemStack stack) {
+                if (slot == 4) {
+                    return stack.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY).isPresent() || PotionUtils.getPotion(stack).equals(Potions.WATER);
+                }
+                return super.isItemValid(slot, stack);
+            }
+
+            @Override
+            public void setStackInSlot(int slot, @NotNull ItemStack stack) {
+                AtomicReference<ItemStack> result = new AtomicReference<>(stack);
+                if (slot == 4) {
+                    stack.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY).ifPresent(cap -> {
+                        FluidUtil.tryFluidTransfer(fluidTank, cap, 1000, true);
+                        //for buckets, this will be the empty bucket, for others, this should be the same as stack
+                        result.set(cap.getContainer());
+                    });
+                    //Handle bottles
+                    if (PotionUtils.getPotion(stack).equals(Potions.WATER)) {
+                        int amount = fluidTank.fill(new FluidStack(Fluids.WATER, 333), IFluidHandler.FluidAction.SIMULATE);
+                        //Cancel if the full bottle can't be emptied;
+                        if (amount == 333) {
+                            //Actually fill, and add 1 if it would have been 999.
+                            fluidTank.fill(new FluidStack(Fluids.WATER, fluidTank.getFluidAmount() == 666 ? 334 : 333), IFluidHandler.FluidAction.EXECUTE);
+                            //Empty bottle
+                            result.set(new ItemStack(Items.GLASS_BOTTLE));
+                        }
+                    }
+                }
+                super.setStackInSlot(slot, result.get());
             }
         };
     }

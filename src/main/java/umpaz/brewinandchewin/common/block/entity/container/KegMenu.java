@@ -1,6 +1,7 @@
 package umpaz.brewinandchewin.common.block.entity.container;
 
 import com.mojang.datafixers.util.Pair;
+import net.minecraft.client.gui.screens.inventory.CraftingScreen;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.recipebook.ServerPlaceRecipe;
 import net.minecraft.resources.ResourceLocation;
@@ -9,17 +10,28 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.StackedContents;
 import net.minecraft.world.inventory.*;
+import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.alchemy.PotionUtils;
+import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.material.Fluids;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidUtil;
+import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
+import net.minecraftforge.fluids.capability.IFluidHandler;
+import net.minecraftforge.fluids.capability.templates.FluidTank;
 import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.items.SlotItemHandler;
 import net.minecraftforge.items.wrapper.RecipeWrapper;
+import org.jetbrains.annotations.NotNull;
 import umpaz.brewinandchewin.BrewinAndChewin;
+import umpaz.brewinandchewin.common.block.KegBlock;
 import umpaz.brewinandchewin.common.block.entity.KegBlockEntity;
 import umpaz.brewinandchewin.common.block.entity.inventory.KegServerPlaceRecipe;
 import umpaz.brewinandchewin.common.registry.BCBlocks;
@@ -27,6 +39,7 @@ import umpaz.brewinandchewin.common.registry.BCMenuTypes;
 import vectorwing.farmersdelight.common.block.entity.container.CookingPotMealSlot;
 
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class KegMenu extends RecipeBookMenu<RecipeWrapper>
 {
@@ -37,11 +50,14 @@ public class KegMenu extends RecipeBookMenu<RecipeWrapper>
     private final ContainerData kegData;
     private final ContainerLevelAccess canInteractWithCallable;
     protected final Level level;
+    //fluid tank access
+    public final FluidTank fluidTank;
 
     public KegMenu(final int windowId, final Inventory playerInventory, final KegBlockEntity tileEntity, ContainerData kegDataIn) {
         super(BCMenuTypes.KEG.get(), windowId);
         this.tileEntity = tileEntity;
         this.inventory = tileEntity.getInventory();
+        this.fluidTank = tileEntity.getFluidTank();
         this.kegData = kegDataIn;
         this.level = playerInventory.player.level;
         this.canInteractWithCallable = ContainerLevelAccess.create(tileEntity.getLevel(), tileEntity.getBlockPos());
@@ -61,6 +77,7 @@ public class KegMenu extends RecipeBookMenu<RecipeWrapper>
         }
 
         // Fluid Recipe Slot
+        //Here I've placed the logic in the "slot". This can also be done inside the itemhandler
         this.addSlot(new SlotItemHandler(inventory, 4, 85, 18));
 
         // Drink Display

@@ -3,6 +3,7 @@ package umpaz.brewinandchewin;
 import net.minecraft.world.inventory.RecipeBookType;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.common.ForgeMod;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
@@ -54,5 +55,8 @@ public class BrewinAndChewin
 		//MinecraftForge.EVENT_BUS.addListener(VillageStructures::addNewVillageBuilding);
 
 		MinecraftForge.EVENT_BUS.register(this);
+
+		//add milk fluid
+		ForgeMod.enableMilkFluid();
 	}
 }
